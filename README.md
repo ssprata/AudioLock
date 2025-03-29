@@ -18,4 +18,4 @@ Version	Features
 | V1.5 | Basic volume lock (no admin required). |
 | V2.0 | Requires admin mode to use the "Disable HID Service" option. |
 
-If you only need the volume lock feature, use V1.5 from the [AudioLockV1.5]([https://pages.github.com/](https://github.com/ssprata/AudioLock/releases/tag/AudioLockV1.5)).
+If you only need the volume lock feature, use **V1.5** from the [AudioLock V1.5 Release](https://github.com/ssprata/AudioLock/releases/tag/AudioLockV1.5).
