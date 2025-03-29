@@ -8,13 +8,14 @@ from comtypes import CLSCTX_ALL
 from pynput import keyboard
 import ctypes
 import sys
+from PIL import Image, ImageTk  
 
 def run_as_admin():
     """Restart the script with elevated privileges"""
     try:
         if ctypes.windll.shell32.IsUserAnAdmin():
             print("DEBUG: Script is running as administrator.")
-            return  # Already running as admin
+            return 
 
         # Relaunch the script with admin rights
         params = " ".join([f'"{arg}"' for arg in sys.argv])
@@ -127,33 +128,69 @@ def toggle_hid_service():
 # GUI Setup
 root = tk.Tk()
 root.title("AudioLock")
-root.geometry("300x300")  
+root.geometry("320x250")
 
-tk.Label(root, text="Set Volume Level (%)", font=("System", 12)).pack(pady=10)
+# Set the background color of the root window
+root.configure(bg="#07003a")
+
+# Get the path to the .ico file (works for both .py and .exe)
+base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+icon_path = os.path.join(base_path, "icon.ico")
+
+# Load the .ico file
+icon_image = Image.open(icon_path)
+icon_photo = ImageTk.PhotoImage(icon_image)
+
+# Set the icon for the application window
+root.iconphoto(True, icon_photo)
+
+# Volume Slider Label
+volume_label = tk.Label(root, text="Set Volume Level: 50%", font=("System", 12), bg="#07003a", fg="white")
+volume_label.pack(pady=5)
 
 # Volume Slider
+def update_volume_label(value):
+    volume_label.config(text=f"Set Volume Level: {value}%", bg="#07003a", fg="white")
+    set_volume(value)
+
 volume_slider = tk.Scale(
     root, 
     from_=0, 
     to=100, 
     orient="horizontal", 
-    command=set_volume, 
+    command=update_volume_label,  # Update label dynamically
     length=150,
-    sliderlength=10 
+    sliderlength=10,
+    bg="#07003a",  # Background color of the slider
+    fg="white",    # Text color of the slider
+    highlightbackground="#07003a",  # Border color of the slider
+    troughcolor="#333366"  # Color of the slider trough
 )
 volume_slider.set(int(volume.GetMasterVolumeLevelScalar() * 100))
 volume_slider.pack(pady=10)
 
 # Lock/Unlock Button
 lock_enabled = False
-lock_button = tk.Button(root, text="Lock Volume", command=toggle_lock, font=("System", 10))
+lock_button = tk.Button(root, text="Lock Volume", command=toggle_lock, font=("System", 10), bg="#07003a", fg="white")
 lock_button.pack(pady=10)
 
 # HID Service Toggle Checkbox
 hid_var = tk.BooleanVar()
 hid_var.trace_add("write", lambda *args: toggle_hid_service())  # Call toggle_hid_service() on change
-hid_checkbox = tk.Checkbutton(root, text="Disable HID Service", variable=hid_var)
-hid_checkbox.pack(pady=10)
+hid_checkbox = tk.Checkbutton(root, text="Disable HID Service", variable=hid_var, bg="#07003a", fg="white", selectcolor="#333366")
+hid_checkbox.pack(pady=5)
+
+# Add a frame to group the "Developed by:" and "@sprata" labels
+developer_frame = tk.Frame(root, bg="#07003a")
+developer_frame.pack(side="bottom", anchor="se", padx=2, pady=2)
+
+# Add "Developed by:" in grey with a smaller font size
+developer_label = tk.Label(developer_frame, text="Developed by:", font=("Arial", 8), fg="grey", bg="#07003a")
+developer_label.pack(side="left")
+
+# Add "@sprata" in the default color with a slightly larger font size
+name_label = tk.Label(developer_frame, text="@sprata", font=("System", 10), fg="white", bg="#07003a")
+name_label.pack(side="left")
 
 # Start keyboard listener in background
 keyboard_thread = threading.Thread(target=listen_for_keys, daemon=True)
